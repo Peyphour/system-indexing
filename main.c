@@ -11,7 +11,7 @@ typedef struct {
     unsigned char hash[32];
 } file_hash;
 
-void generate_file(int argc, char *paths[], FILE *pIobuf);
+void generate_file(int argc, char *paths[], FILE *output_file);
 
 void hash_data(unsigned char *data, size_t length, unsigned char *out) {
     SHA256_CTX *sha256_ctx = malloc(sizeof(SHA256_CTX));
@@ -19,6 +19,7 @@ void hash_data(unsigned char *data, size_t length, unsigned char *out) {
     sha256_update(sha256_ctx, data, length);
 
     sha256_final(sha256_ctx, out);
+    free(sha256_ctx);
 }
 
 file_hash process_file(char *file_path) {
@@ -28,7 +29,7 @@ file_hash process_file(char *file_path) {
 
 
     if (file == NULL) {
-        printf("Couldn't open file %s for reading\n", file_path);
+        printf("Couldn't open file %s for reading %s\n", file_path, strerror(*_errno()));
         return result;
     }
 
@@ -45,6 +46,7 @@ file_hash process_file(char *file_path) {
 
 
     free(data);
+    fclose(file);
 
     strcpy(result.file_path, file_path);
     memcpy((char *) result.hash, (char *) hash, 32);
